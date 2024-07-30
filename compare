@@ -1,0 +1,45 @@
+
+with liste as (select b.ADI               as depo,
+                      e.ID                as birim_id,
+                      e.ADI               as birim,
+                      --c.ADI_SOYADI,
+                      f.MALZEME_ID,
+                      g.ADI               as ilac_adi,
+                      g.BARKODU           as barkodu,
+
+                      --f.CIKAN_MIKTAR,
+                      --f.*,
+                      --a.*,
+                      sum(f.CIKAN_MIKTAR) as miktar
+               from STOK_FIS a,
+                    depo b,
+                    hasta c,
+                    birim_kayit d,
+                    birim e,
+                    stok_hareket f,
+                    malzeme g
+               where a.DEPO_ID = b.ID
+                 and a.HASTA_ID = c.ID
+                 and d.ID = a.BIRIM_KAYIT_ID
+                 and e.ID = d.BIRIM_ID
+                 and f.FIS_ID = a.ID
+                 and f.MALZEME_ID = g.ID
+                 and to_char(a.TARIHI, 'dd.mm.yyyy') = '26.07.2024'
+                 and nvl(a.HASTA_ID, 0) != 0
+                 and a.ONAYLAYAN is not null
+                 and a.G_C = 'C'  --çıkış
+                 and DEPO_ID = 11958
+                 and e.ID = 541** --dahiliye
+               group by b.ADI, f.malzeme_id, e.ID, e.ADI, g.ADI, g.BARKODU
+               order by 3, 4)
+select l.*,
+       (select sum(b.cikan_miktar)
+        from stok_fis a,
+             stok_hareket b
+        where b.FIS_ID = a.ID
+          and a.DEPO_ID = 500000008**
+          and a.KARSI_BIRIM_ID = l.birim_id
+          and a.TARIHI = '27.07.2024'
+          and a.G_C = 'C'
+          and b.MALZEME_ID = l.MALZEME_ID)
+from liste l;
